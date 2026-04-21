@@ -1,4 +1,4 @@
-import { GitHubBanner, Refine, WelcomePage } from "@refinedev/core";
+import { Refine, WelcomePage } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
@@ -13,16 +13,18 @@ import { useNotificationProvider } from "./components/refine-ui/notification/use
 import { ThemeProvider } from "./components/refine-ui/theme/theme-provider";
 
 import Dashboard from "./pages/Dashboard";
-import { BookOpen, Home } from "lucide-react";
+import { BookOpen, GraduationCap, Home } from "lucide-react";
 import { Layout } from "./components/refine-ui/layout/layout";
 import SubjectList from "./pages/subjects/List";
 import SubjectCreate from "./pages/subjects/Create";
 import { dataProvider } from "./provider/data";
+import ClassList from "./pages/classes/List";
+import CLassCreate from "./pages/classes/Create";
+console.log("App Component Rendered Data Provider:", dataProvider);
 
 function App() {
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ThemeProvider>
           <DevtoolsProvider>
@@ -34,6 +36,7 @@ function App() {
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
                 projectId: "ISLTor-zLjGvi-e2gdAA",
+                disableTelemetry: true,
               }}
               resources={[
                 {
@@ -46,6 +49,12 @@ function App() {
                   list: "/subjects",
                   create: "subjects/create",
                   meta: { label: "Subjects", icon: <BookOpen /> },
+                },
+                {
+                  name: "classes",
+                  list: "/classes",
+                  create: "classes/create",
+                  meta: { label: "Classes", icon: <GraduationCap /> },
                 },
               ]}
             >
@@ -61,6 +70,10 @@ function App() {
                   <Route path="subjects">
                     <Route index element={<SubjectList />} />
                     <Route path="create" element={<SubjectCreate />} />
+                  </Route>
+                  <Route path="classes">
+                    <Route index element={<ClassList />} />
+                    <Route path="create" element={<CLassCreate />} />
                   </Route>
                 </Route>
               </Routes>

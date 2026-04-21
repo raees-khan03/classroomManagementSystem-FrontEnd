@@ -102,7 +102,7 @@ export function DataTable<TData extends BaseRecord>({
                         <div className={cn("flex", "items-center", "gap-1")}>
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                         </div>
                       )}
@@ -136,7 +136,7 @@ export function DataTable<TData extends BaseRecord>({
                         </TableCell>
                       ))}
                     </TableRow>
-                  )
+                  ),
                 )}
                 <TableRow>
                   <TableCell
@@ -153,7 +153,7 @@ export function DataTable<TData extends BaseRecord>({
                         "h-8",
                         "w-8",
                         "-translate-x-1/2",
-                        "-translate-y-1/2"
+                        "-translate-y-1/2",
                       )}
                     />
                   </TableCell>
@@ -180,7 +180,7 @@ export function DataTable<TData extends BaseRecord>({
                           <div className="truncate">
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext()
+                              cell.getContext(),
                             )}
                           </div>
                         </TableCell>
@@ -235,7 +235,7 @@ function DataTableNoData({
             "items-center",
             "justify-center",
             "gap-2",
-            "bg-background"
+            "bg-background",
           )}
           style={{
             position: isOverflowing.horizontal ? "sticky" : "absolute",

@@ -11,35 +11,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEPARTMENTS_OPTIONS } from "@/constants";
+import { DEPARTMENT_OPTIONS } from "@/constants";
 import { Subject } from "@/types";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Search } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const SubjectList = () => {
-  const [searchQuery, setSeachQuery] = useState("");
-  const [selectedDepartment, setselectedDepartment] = useState("all");
-  const departmentFilters =
-    selectedDepartment === "all"
-      ? []
-      : [
-          {
-            field: "department",
-            operator: "eq" as const,
-            value: selectedDepartment,
-          },
-        ];
-  const searchFilters = searchQuery
-    ? [
-        {
-          field: "name",
-          operator: "contains" as const,
-          value: searchQuery,
-        },
-      ]
-    : [];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+
+  // ✅ Debounce — 500ms baad hi debouncedSearch update hoga
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const subjectTable = useTable<Subject>({
     columns: useMemo<ColumnDef<Subject>[]>(
       () => [
@@ -54,46 +46,70 @@ const SubjectList = () => {
           id: "name",
           accessorKey: "name",
           size: 200,
-          header: () => <p className="column-title ">Name</p>,
+          header: () => <p className="column-title">Name</p>,
           cell: ({ getValue }) => (
             <span className="text-foreground">{getValue<string>()}</span>
           ),
-          filterFn: "includesString",
         },
         {
           id: "department",
           accessorKey: "department",
-          size: 200,
-          header: () => <p className="column-title ">Department</p>,
-          cell: ({ getValue }) => (
-            <span className="text-foreground">{getValue<string>()}</span>
-          ),
-          filterFn: "includesString",
+          header: () => <p className="column-title">Department</p>,
+          cell: ({ getValue }) => {
+            const dept = getValue<{ name: string } | string>();
+            return (
+              <span className="text-foreground">
+                {typeof dept === "object" ? dept?.name : dept}
+              </span>
+            );
+          },
         },
         {
           id: "description",
           accessorKey: "description",
           size: 200,
-          header: () => <p className="column-title ">Description</p>,
+          header: () => <p className="column-title">Description</p>,
           cell: ({ getValue }) => (
             <span className="truncate line-clamp-2">{getValue<string>()}</span>
           ),
-          filterFn: "includesString",
         },
       ],
       [],
     ),
     refineCoreProps: {
       resource: "subjects",
-      pagination: { pageSize: 10, mode: "server" },
-      filters: {
-        permanent: [...departmentFilters, ...searchFilters],
+      pagination: {
+        pageSize: 10,
+        mode: "server",
       },
       sorters: {
         initial: [{ field: "id", order: "desc" }],
       },
     },
   });
+
+  const { setFilters } = subjectTable.refineCore;
+
+  // ✅ Sirf debouncedSearch ya department change hone par API call
+  useEffect(() => {
+    setFilters([
+      {
+        field: "name",
+        operator: "contains",
+        value: debouncedSearch || undefined,
+      },
+      {
+        field: "department",
+        operator: "eq",
+        value: selectedDepartment === "all" ? undefined : selectedDepartment,
+      },
+    ]);
+  }, [debouncedSearch, selectedDepartment]);
+
+  const handleDepartment = (value: string) => {
+    setSelectedDepartment(value);
+  };
+
   return (
     <ListView>
       <Breadcrumb />
@@ -108,24 +124,18 @@ const SubjectList = () => {
               placeholder="Search by name..."
               className="pl-10 w-full"
               value={searchQuery}
-              onChange={(e) => setSeachQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)} // ✅ sirf state update
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Select
-              value={selectedDepartment}
-              onValueChange={setselectedDepartment}
-            >
+            <Select value={selectedDepartment} onValueChange={handleDepartment}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by department" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Depatments</SelectItem>
-                {DEPARTMENTS_OPTIONS.map((department) => (
-                  <SelectItem
-                    key={department.value} // ✅ add a unique key
-                    value={department.value}
-                  >
+                <SelectItem value="all">All Departments</SelectItem>
+                {DEPARTMENT_OPTIONS.map((department) => (
+                  <SelectItem key={department.value} value={department.value}>
                     {department.label}
                   </SelectItem>
                 ))}

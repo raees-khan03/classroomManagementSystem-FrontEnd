@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm } from "@refinedev/react-hook-form";
 import { classSchema } from "@/lib/schema.ts";
 import * as z from "zod";
 import {
@@ -38,6 +38,10 @@ const Create = () => {
 
   const form = useForm({
     resolver: zodResolver(classSchema),
+    refineCoreProps: {
+      resource: "classes",
+      action: "create",
+    },
     defaultValues: {
       status: "active",
     },
@@ -69,7 +73,7 @@ const Create = () => {
 
   const bannerpublicId = form.watch("bannerCldPubId");
 
-  const setBannerImage = (file, field) => {
+  const setBannerImage = (file: any, field: any) => {
     if (file) {
       field.onChange(file.url);
       form.setValue("bannerCldPubId", file.publicId, {

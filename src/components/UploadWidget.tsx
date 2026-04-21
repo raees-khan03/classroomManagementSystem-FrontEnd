@@ -16,8 +16,6 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
 
   useEffect(() => {
     setPreviewUrl(value);
-    if (!value) {
-    }
   }, [value]);
 
   useEffect(() => {

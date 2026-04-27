@@ -32,9 +32,60 @@ import {
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Loader2 } from "lucide-react";
 import UploadWidget from "@/components/UploadWidget";
+import { Subject, User } from "@/types";
+import { useState, useEffect } from "react"; // ✅ add this
+
+const API_URL = "http://localhost:3000/api"; // 👈 your backend URL
 
 const Create = () => {
   const back = useBack();
+
+  // ✅ Local state for subjects and teachers
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [teachers, setTeachers] = useState<User[]>([]);
+  const [subjectLoading, setSubjectLoading] = useState(true);
+  const [teacherLoading, setTeacherLoading] = useState(true);
+
+  // ✅ Fetch subjects directly
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        setSubjectLoading(true);
+        const res = await fetch(`${API_URL}/subjects?page=1&limit=100`);
+
+        const json = await res.json();
+
+        console.log("Fetch subjects response:", json);
+        setSubjects(json.data || []);
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err);
+      } finally {
+        setSubjectLoading(false);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  // ✅ Fetch teachers directly
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        setTeacherLoading(true);
+        const res = await fetch(
+          `${API_URL}/users?role=teacher&page=1&limit=100`,
+        );
+
+        const json = await res.json();
+        console.log("Fetch teachers response:", json);
+        setTeachers(json.data || []);
+      } catch (err) {
+        console.error("Failed to fetch teachers:", err);
+      } finally {
+        setTeacherLoading(false);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(classSchema),
@@ -48,6 +99,7 @@ const Create = () => {
   });
 
   const {
+    refineCore: { onFinish },
     handleSubmit,
     formState: { isSubmitting, errors },
     control,
@@ -55,21 +107,11 @@ const Create = () => {
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
-      console.log(values);
+      await onFinish(values);
     } catch (error) {
       console.error("Error creating class:", error);
     }
   };
-
-  const teachers = [
-    { id: 1, name: "John Doe" },
-    { id: 2, name: "Jane Doe" },
-  ];
-
-  const subjects = [
-    { id: 1, name: "Math", code: "MATH" },
-    { id: 2, name: "English", code: "ENG" },
-  ];
 
   const bannerpublicId = form.watch("bannerCldPubId");
 
@@ -179,10 +221,18 @@ const Create = () => {
                             field.onChange(Number(value))
                           }
                           value={field.value?.toString()}
+                          disabled={subjectLoading}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a subject" />
+                              {/* ✅ Show loading text inside trigger */}
+                              <SelectValue
+                                placeholder={
+                                  subjectLoading
+                                    ? "Loading subjects..."
+                                    : "Select a subject"
+                                }
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -212,18 +262,23 @@ const Create = () => {
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={teacherLoading}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a teacher" />
+                              {/* ✅ Show loading text inside trigger */}
+                              <SelectValue
+                                placeholder={
+                                  teacherLoading
+                                    ? "Loading teachers..."
+                                    : "Select a teacher"
+                                }
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {teachers.map((teacher) => (
-                              <SelectItem
-                                key={teacher.id}
-                                value={teacher.id.toString()}
-                              >
+                              <SelectItem key={teacher.id} value={teacher.id}>
                                 {teacher.name}
                               </SelectItem>
                             ))}

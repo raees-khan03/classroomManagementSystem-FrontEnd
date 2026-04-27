@@ -1,12 +1,38 @@
-// provider/data.ts
+import { CreateResponse } from "@/types";
 import {
   DataProvider,
   GetListParams,
   GetListResponse,
+  CreateParams,
+  CreateResponse as RefineCreateResponse,
   BaseRecord,
 } from "@refinedev/core";
 
 const BASE_URL = "http://localhost:3000/api";
+
+class HttpError extends Error {
+  statusCode: number;
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+const buildHttpErrors = async (response: Response) => {
+  let message = "Request failed";
+  try {
+    const payload = (await response.json()) as { message: string };
+    if (payload.message) {
+      message = payload.message;
+    }
+  } catch (err) {
+    // JSON parsing failed — keep default message
+  }
+  return {
+    message,
+    statusCode: response.status,
+  };
+};
 
 const dataProvider: DataProvider = {
   getList: async <TData extends BaseRecord = BaseRecord>({
@@ -16,16 +42,12 @@ const dataProvider: DataProvider = {
   }: GetListParams): Promise<GetListResponse<TData>> => {
     const params = new URLSearchParams();
 
-    console.log("Page:", pagination.currentPage);
-    console.log("Filters:", filters);
-
-    // ✅ Pagination
-    const page = pagination?.currentPage ?? 1;
+    const page =
+      (pagination as any)?.current ?? (pagination as any)?.currentPage ?? 1;
     const limit = pagination?.pageSize ?? 10;
     params.append("page", String(page));
     params.append("limit", String(limit));
-    console.log("PAGE VALUE:", page);
-    // ✅ Filters
+
     if (filters) {
       for (const filter of filters) {
         if (
@@ -35,10 +57,11 @@ const dataProvider: DataProvider = {
         ) {
           if (filter.field === "name") {
             params.append("search", String(filter.value));
-          }
-
-          if (filter.field === "department") {
+          } else if (filter.field === "department") {
             params.append("department", String(filter.value));
+          } else {
+            // ✅ handles role and any other filters
+            params.append(filter.field, String(filter.value));
           }
         }
       }
@@ -47,8 +70,13 @@ const dataProvider: DataProvider = {
     const response = await fetch(
       `${BASE_URL}/${resource}?${params.toString()}`,
     );
+
+    if (!response.ok) {
+      const error = await buildHttpErrors(response);
+      throw new HttpError(error.message, error.statusCode);
+    }
+
     const json = await response.json();
-    console.log("Result", json);
 
     return {
       data: json.data as TData[],
@@ -56,10 +84,33 @@ const dataProvider: DataProvider = {
     };
   },
 
-  getOne: async () => {
-    throw new Error("Not implemented");
+  // ✅ Fixed: create must be an async function, not an object
+  create: async <TData extends BaseRecord = BaseRecord, TVariables = {}>({
+    resource,
+    variables,
+  }: CreateParams<TVariables>): Promise<RefineCreateResponse<TData>> => {
+    const response = await fetch(`${BASE_URL}/${resource}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(variables),
+    });
+
+    if (!response.ok) {
+      const error = await buildHttpErrors(response);
+      throw new HttpError(error.message, error.statusCode);
+    }
+
+    const json = await response.json();
+
+    return {
+      data: (json.data ?? json) as TData,
+    };
   },
-  create: async () => {
+
+  // ✅ Required stubs — Refine needs these defined
+  getOne: async () => {
     throw new Error("Not implemented");
   },
   update: async () => {
@@ -68,6 +119,7 @@ const dataProvider: DataProvider = {
   deleteOne: async () => {
     throw new Error("Not implemented");
   },
+  getApiUrl: () => BASE_URL,
 };
 
-export { dataProvider };
+export { dataProvider, HttpError };

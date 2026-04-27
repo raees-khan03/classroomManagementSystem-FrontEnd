@@ -3,11 +3,18 @@ import { UploadWidgetValue } from "@/types";
 import { UploadCloud } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
-const UploadWidget = ({ value = null, onChange, disabled = false }) => {
+const UploadWidget = ({
+  value = null,
+  onChange,
+  disabled = false,
+}: {
+  value: UploadWidgetValue | null;
+  onChange: (file: UploadWidgetValue | null) => void;
+  disabled?: boolean;
+}) => {
   const widgetRef = useRef<any>(null);
   const onChangeRef = useRef(onChange);
-  const [previewUrl, setPreviewUrl] = useState(value);
-
+  const [previewUrl, setPreviewUrl] = useState<UploadWidgetValue | null>(value);
   const openWidget = () => {
     if (!disabled) {
       widgetRef.current?.open();

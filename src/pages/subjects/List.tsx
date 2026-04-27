@@ -12,9 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENT_OPTIONS } from "@/constants";
-import { HttpError } from "@/provider/data";
 import { Subject } from "@/types";
-import { useNotification } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Search } from "lucide-react";
@@ -25,20 +23,12 @@ const SubjectList = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
 
-  // ✅ Refine notification hook to show errors on UI
-  const { open } = useNotification();
-
-  // ✅ Debounce — 500ms after typing, debouncedSearch updates
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
     }, 500);
-
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  // ✅ Removed handleTest useEffect — it was bypassing dataProvider
-  //    and only logging to console, nothing surfaced to UI
 
   const subjectTable = useTable<Subject>({
     columns: useMemo<ColumnDef<Subject>[]>(
@@ -93,39 +83,14 @@ const SubjectList = () => {
       sorters: {
         initial: [{ field: "id", order: "desc" }],
       },
-      // ✅ Handle errors from dataProvider and show them on UI
       queryOptions: {
-        retry: false, // ✅ Don't retry on 429/403 — would just spam more blocked requests
-        onError: (error: unknown) => {
-          const httpError = error as HttpError;
-
-          if (httpError.statusCode === 429) {
-            open?.({
-              type: "error",
-              message: "Too Many Requests",
-              description: httpError.message,
-            });
-          } else if (httpError.statusCode === 403) {
-            open?.({
-              type: "error",
-              message: "Access Denied",
-              description: httpError.message,
-            });
-          } else {
-            open?.({
-              type: "error",
-              message: "Something went wrong",
-              description: httpError.message ?? "Unexpected error occurred",
-            });
-          }
-        },
+        retry: false,
       },
     },
   });
 
   const { setFilters } = subjectTable.refineCore;
 
-  // ✅ Only re-runs when debouncedSearch or department changes
   useEffect(() => {
     setFilters([
       {
@@ -140,10 +105,6 @@ const SubjectList = () => {
       },
     ]);
   }, [debouncedSearch, selectedDepartment]);
-
-  const handleDepartment = (value: string) => {
-    setSelectedDepartment(value);
-  };
 
   return (
     <ListView>
@@ -163,7 +124,10 @@ const SubjectList = () => {
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Select value={selectedDepartment} onValueChange={handleDepartment}>
+            <Select
+              value={selectedDepartment}
+              onValueChange={(value) => setSelectedDepartment(value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by department" />
               </SelectTrigger>

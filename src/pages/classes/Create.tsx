@@ -32,7 +32,7 @@ import {
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Loader2 } from "lucide-react";
 import UploadWidget from "@/components/UploadWidget";
-import { Subject, User } from "@/types";
+import { Subject, UploadWidgetValue, User } from "@/types";
 import { useState, useEffect } from "react"; // ✅ add this
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
@@ -115,7 +115,7 @@ const Create = () => {
 
   const bannerpublicId = form.watch("bannerCldPubId");
 
-  const setBannerImage = (file: any, field: any) => {
+  const setBannerImage = (file: UploadWidgetValue | null, field: any) => {
     if (file) {
       field.onChange(file.url);
       form.setValue("bannerCldPubId", file.publicId, {

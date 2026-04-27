@@ -35,7 +35,7 @@ import UploadWidget from "@/components/UploadWidget";
 import { Subject, User } from "@/types";
 import { useState, useEffect } from "react"; // ✅ add this
 
-const API_URL = "http://localhost:3000/api"; // 👈 your backend URL
+const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
 const Create = () => {
   const back = useBack();

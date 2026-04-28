@@ -80,7 +80,7 @@ const dataProvider: DataProvider = {
 
     return {
       data: json.data as TData[],
-      total: json.pagination.total,
+      total: json.pagination?.total ?? json.data?.length ?? 0,
     };
   },
 

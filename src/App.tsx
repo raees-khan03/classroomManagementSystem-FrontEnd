@@ -20,6 +20,7 @@ import SubjectCreate from "./pages/subjects/Create";
 import { dataProvider } from "./provider/data";
 import ClassList from "./pages/classes/List";
 import CLassCreate from "./pages/classes/Create";
+import ClassShow from "./pages/classes/show";
 console.log("App Component Rendered Data Provider:", dataProvider);
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
                 {
                   name: "classes",
                   list: "/classes",
+                  show: "classes/show/:id",
                   create: "classes/create",
                   meta: { label: "Classes", icon: <GraduationCap /> },
                 },
@@ -74,6 +76,7 @@ function App() {
                   <Route path="classes">
                     <Route index element={<ClassList />} />
                     <Route path="create" element={<CLassCreate />} />
+                    <Route path="show/:id" element={<ClassShow />} />
                   </Route>
                 </Route>
               </Routes>

@@ -16,6 +16,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Search } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { CreateButton } from "@/components/refine-ui/buttons/create";
+import { ShowButton } from "@/components/refine-ui/buttons/show";
 
 const STATUS_OPTIONS = [
   { label: "Active", value: "active" },
@@ -104,6 +105,21 @@ const ClassList = () => {
               </Badge>
             );
           },
+        },
+        {
+          id: "details",
+          size: 140,
+          header: () => <p className="column-title">Details</p>,
+          cell: ({ row }) => (
+            <ShowButton
+              resource="classes"
+              recordItemId={row.original.id}
+              variant="outline"
+              size="sm"
+            >
+              View
+            </ShowButton>
+          ),
         },
       ],
       [],

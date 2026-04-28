@@ -110,8 +110,22 @@ const dataProvider: DataProvider = {
   },
 
   // ✅ Required stubs — Refine needs these defined
-  getOne: async () => {
-    throw new Error("Not implemented");
+  getOne: async <TData extends BaseRecord = BaseRecord>({
+    resource,
+    id,
+  }: GetOneParams): Promise<GetOneResponse<TData>> => {
+    const response = await fetch(`${BASE_URL}/${resource}/${id}`);
+
+    if (!response.ok) {
+      const error = await buildHttpErrors(response);
+      throw new HttpError(error.message, error.statusCode);
+    }
+
+    const json = await response.json();
+
+    return {
+      data: (json.data ?? json) as TData,
+    };
   },
   update: async () => {
     throw new Error("Not implemented");

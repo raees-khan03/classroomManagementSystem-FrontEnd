@@ -120,3 +120,21 @@ export type SignUpPayload = {
   imageCldPubId?: string;
   role: UserRole;
 };
+
+// add this to your types file
+
+export type Class = {
+  id: number;
+  subjectId: number;
+  teacherId: string;
+  inviteCode: string;
+  name: string;
+  bannerCldPubId: string | null;
+  bannerUrl: string | null;
+  description: string;
+  capacity: number;
+  status: "active" | "inactive" | "archived";
+  schedules: Schedule[];
+  createdAt: string;
+  updatedAt: string;
+};

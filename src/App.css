@@ -352,11 +352,11 @@
       @apply mt-5 mb-1;
 
       img {
-        @apply w-full aspect-5/1 rounded-xl object-cover shadow-md;
+        @apply w-full aspect-video rounded-xl object-cover object-center shadow-md;
       }
 
       .placeholder {
-        @apply h-72 w-full bg-slate-200;
+        @apply h-72 w-full bg-slate-200 rounded-xl;
       }
     }
 
